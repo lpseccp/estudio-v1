@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <title>Try-On IA</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Try-On com IA</h1>
+    <input type="file" id="photoUpload" accept="image/*"/>
+    
+    <select id="dressSelect">
+      <option value="vestido1">Vestido Vermelho</option>
+      <option value="vestido2">Vestido Azul</option>
+    </select>
+    
+    <button onclick="gerarImagem()">Gerar Imagem</button>
+    
+    <div id="previewContainer">
+      <h3>Resultado:</h3>
+      <img id="resultImage" src="" alt="Imagem gerada aparecerá aqui"/>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
