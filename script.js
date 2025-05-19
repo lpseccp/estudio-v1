@@ -29,7 +29,7 @@ async function gerarImagem() {
 
   const imagemVestidoUrl = vestidos[vestido];
 
-  const replicateToken = "SEU_TOKEN_AQUI"; // Substitua pelo seu token da Replicate
+  const replicateToken = "r8_4JNcJ2GLdEglpMZd1pefujVmohzC0Td3t314A"; // Substitua pelo seu token da Replicate
 
   try {
     const response = await fetch("https://api.replicate.com/v1/predictions", {
