@@ -1,89 +1,80 @@
-let imagemBase64 = "";
+document.getElementById("uploadForm").addEventListener("submit", async function (e) {
+  e.preventDefault();
 
-document.getElementById("photoUpload").addEventListener("change", function(e) {
-  const file = e.target.files[0];
-  const reader = new FileReader();
+  const imageInput = document.getElementById("image");
+  const dressInput = document.getElementById("dress");
+  const resultImage = document.getElementById("resultImage");
 
-  reader.onload = function(event) {
-    imagemBase64 = event.target.result;
-    document.getElementById("resultImage").src = imagemBase64; // preview inicial
-  };
-
-  if (file) {
-    reader.readAsDataURL(file);
-  }
-});
-
-async function gerarImagem() {
-  const vestido = document.getElementById("dressSelect").value;
-
-  if (!imagemBase64) {
-    alert("Envie uma imagem sua primeiro.");
+  if (!imageInput.files[0]) {
+    alert("Por favor, envie uma imagem.");
     return;
   }
 
-  const vestidos = {
-    vestido1: "https://i.imgur.com/XFVy1YF.png", // Exemplo: vestido vermelho sem fundo
-    vestido2: "https://i.imgur.com/KD8iPSy.png"  // Exemplo: vestido azul sem fundo
-  };
+  const formData = new FormData();
+  formData.append("file", imageInput.files[0]);
 
-  const imagemVestidoUrl = vestidos[vestido];
-
-  const replicateToken = "r8_4JNcJ2GLdEglpMZd1pefujVmohzC0Td3t314A"; // Substitua pelo seu token da Replicate
+  const model = "your-username/your-model"; // Substitua pelo seu modelo do Replicate
+  const replicateApiKey = "your_replicate_api_key"; // Substitua pela sua chave de API
 
   try {
     const response = await fetch("https://api.replicate.com/v1/predictions", {
       method: "POST",
       headers: {
-        "Authorization": `Token ${replicateToken}`,
+        "Authorization": `Token ${replicateApiKey}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        version: "d5f3c95f8ca94dc9243e8e091b9b746cd4f1ff043014d30834c2f9bdbf6cc74f",
+        version: "versão-do-modelo", // Ex: 123abc456def... (pego no site do modelo no Replicate)
         input: {
-          image: imagemBase64,
-          clothing_image: imagemVestidoUrl
+          image: await toBase64(imageInput.files[0]),
+          prompt: `a person wearing a ${dressInput.value}`
         }
       })
     });
 
-    const prediction = await response.json();
+    const result = await response.json();
+    console.log(result);
 
-    if (!prediction?.urls?.get) {
-      alert("Erro ao enviar imagem para IA.");
-      return;
+    if (result?.error || !result?.urls?.get) {
+      throw new Error(result?.error || "Erro ao iniciar a geração da imagem.");
     }
 
-    // Aguarda o processamento
-    let outputUrl = null;
-    while (!outputUrl) {
-      const statusResponse = await fetch(prediction.urls.get, {
-        headers: {
-          "Authorization": `Token ${replicateToken}`
-        }
-      });
-      const statusData = await statusResponse.json();
+    // Polling para pegar o resultado final
+    const final = await checkPrediction(result.urls.get, replicateApiKey);
 
-      if (statusData.status === "succeeded") {
-        outputUrl = statusData.output;
-        document.getElementById("resultImage").src = outputUrl;
-      } else if (statusData.status === "failed") {
-        alert("A geração falhou.");
-        break;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 2000)); // espera 2s antes de checar novamente
+    if (final?.output) {
+      resultImage.src = final.output;
+    } else {
+      throw new Error("A geração falhou.");
     }
 
-  } catch (error) {
-    console.error("Erro ao gerar imagem:", error);
+  } catch (err) {
+    console.error(err);
     alert("Erro inesperado. Verifique o console.");
   }
+});
+
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+  });
 }
 
-// Ativa o service worker para PWA
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js')
-    .then(() => console.log("Service Worker registrado com sucesso."))
-    .catch(err => console.error("Erro ao registrar Service Worker:", err));
+async function checkPrediction(url, token) {
+  while (true) {
+    const res = await fetch(url, {
+      headers: {
+        "Authorization": `Token ${token}`
+      }
+    });
+
+    const data = await res.json();
+    if (data.status === "succeeded") return data;
+    if (data.status === "failed") throw new Error("Predição falhou.");
+
+    await new Promise(r => setTimeout(r, 2000));
+  }
 }
