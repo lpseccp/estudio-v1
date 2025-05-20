@@ -24,7 +24,7 @@ document.getElementById("uploadForm").addEventListener("submit", async function 
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        version: "versão-do-modelo", // Ex: 123abc456def... (pego no site do modelo no Replicate)
+        version: "278a81e7ebb22db98bcba54de985d22cc1abeead2754eb1f2af717247be69b34", // Ex: 123abc456def... (pego no site do modelo no Replicate)
         input: {
           image: await toBase64(imageInput.files[0]),
           prompt: `a person wearing a ${dressInput.value}`
