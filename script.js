@@ -14,7 +14,7 @@ document.getElementById("uploadForm").addEventListener("submit", async function 
   formData.append("file", imageInput.files[0]);
 
   const model = "your-username/your-model"; // Substitua pelo seu modelo do Replicate
-  const replicateApiKey = "your_replicate_api_key"; // Substitua pela sua chave de API
+  const replicateApiKey = "r8_2kdKrJPrW0Jwn0Nzx19wlJkYtU1XFT13lnFaa"; // Substitua pela sua chave de API
 
   try {
     const response = await fetch("https://api.replicate.com/v1/predictions", {
