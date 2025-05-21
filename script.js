@@ -10,11 +10,8 @@ document.getElementById("uploadForm").addEventListener("submit", async function 
     return;
   }
 
-  const formData = new FormData();
-  formData.append("file", imageInput.files[0]);
-
-  const model = "your-username/your-model"; // Substitua pelo seu modelo do Replicate
-  const replicateApiKey = "r8_2kdKrJPrW0Jwn0Nzx19wlJkYtU1XFT13lnFaa"; // Substitua pela sua chave de API
+  const replicateApiKey = "r8_EiaYJn3pY3N583gaYlQArD7cGJbxfN81VoUbS";
+  const versionId = "278a81e7ebb22db98bcba54de985d22cc1abeead2754eb1f2af717247be69b34";
 
   try {
     const response = await fetch("https://api.replicate.com/v1/predictions", {
@@ -24,7 +21,7 @@ document.getElementById("uploadForm").addEventListener("submit", async function 
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        version: "278a81e7ebb22db98bcba54de985d22cc1abeead2754eb1f2af717247be69b34", // Ex: 123abc456def... (pego no site do modelo no Replicate)
+        version: versionId,
         input: {
           image: await toBase64(imageInput.files[0]),
           prompt: `a person wearing a ${dressInput.value}`
@@ -33,24 +30,24 @@ document.getElementById("uploadForm").addEventListener("submit", async function 
     });
 
     const result = await response.json();
-    console.log(result);
+    console.log("Início:", result);
 
     if (result?.error || !result?.urls?.get) {
       throw new Error(result?.error || "Erro ao iniciar a geração da imagem.");
     }
 
-    // Polling para pegar o resultado final
+    // Verifica status da predição
     const final = await checkPrediction(result.urls.get, replicateApiKey);
 
-    if (final?.output) {
-      resultImage.src = final.output;
+    if (final?.output && final.output.length > 0) {
+      resultImage.src = final.output[0];
     } else {
       throw new Error("A geração falhou.");
     }
 
   } catch (err) {
-    console.error(err);
-    alert("Erro inesperado. Verifique o console.");
+    console.error("Erro:", err);
+    alert("Erro inesperado. Verifique o console para mais detalhes.");
   }
 });
 
@@ -72,6 +69,8 @@ async function checkPrediction(url, token) {
     });
 
     const data = await res.json();
+    console.log("Status:", data.status);
+
     if (data.status === "succeeded") return data;
     if (data.status === "failed") throw new Error("Predição falhou.");
 
