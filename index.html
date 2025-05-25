@@ -11,11 +11,16 @@
 </head>
 <body>
   <h1>Try-On com IA</h1>
+  
   <input type="file" id="photoUpload" accept="image/*"/><br/><br/>
+  
   <select id="dressSelect">
     <option value="red dress">Vestido Vermelho</option>
     <option value="blue dress">Vestido Azul</option>
+    <option value="elegant white dress">Vestido Branco Elegante</option>
+    <option value="black evening gown">Vestido Preto de Festa</option>
   </select>
+  
   <br/><br/>
   <button onclick="gerarImagem()">Gerar Imagem</button>
 
@@ -36,9 +41,9 @@
       const reader = new FileReader();
       reader.readAsDataURL(photo);
       reader.onloadend = async () => {
-        const base64 = reader.result;
+        const base64 = reader.result.split(',')[1]; // remove o prefixo "data:image/..."
 
-        const response = await fetch('https://SEU-PROJETO.glitch.me/gerar-imagem', {
+        const response = await fetch('https://nifty-dawn-ziconium.glitch.me/gerar-imagem', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -52,7 +57,8 @@
         if (data?.urls?.get) {
           await esperarEExibirResultado(data.urls.get);
         } else {
-          alert('Erro ao gerar imagem');
+          alert('Erro ao gerar imagem.');
+          console.log(data);
         }
       };
     }
@@ -70,7 +76,7 @@
         }
 
         if (json.status === 'failed') {
-          alert('Falha na geração.');
+          alert('Falha na geração da imagem.');
           break;
         }
 
